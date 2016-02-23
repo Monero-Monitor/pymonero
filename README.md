@@ -108,3 +108,7 @@ reserve_size = 200
 block_template = bitmonero.get_block_template(address, reserve_size)
 print(block_template.to_JSON())
 ```
+
+# Acknowledgements
+
+Some initial code inspired by [Monero Examples](https://moneroexamples.github.io/python-json-rpc/)
