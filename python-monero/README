@@ -1,7 +1,8 @@
 monero-python is a Python wrapper around the Monero RPC API.
 It allows receiving and sending Monero using a Python API.
 Copyright 2014, 2015 moneromooo. Licensed as BSD.
-Git tree: http://duckpool.mooo.com/python-monero
+Git tree: https://github.com/tippero/python-monero
+Last commit: https://github.com/tippero/python-monero/commit/b02aa728599d3ff3f04033938db1c2791494b26a
 
 Requirements:
   - Monero
