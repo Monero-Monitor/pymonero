@@ -1,5 +1,6 @@
 from . import connections as _conns
 from . import bitmonerod as _bitmonerod
+from . import simplewallet as _simplewallet
 
 class Bitmonero:
     def __init__(self, daemon=None):
@@ -57,3 +58,15 @@ class Bitmonero:
     # Get transaction info by tx hash
     def get_transactions(self, tx_hash, block=None):
         return _bitmonerod.rpc.getTransactions(self.daemon, tx_hash, block)
+
+class SimpleWallet:
+    def __init__(self, wallet=None):
+        if wallet is not None and isinstance(wallet, _conns.Wallet):
+            # if a valid connections.Wallet object is provided, use it
+            self.wallet = wallet
+        else:
+            # if no valid connections.Wallet object is provided, use default
+            self.wallet = _conns.Wallet()
+    
+    def get_balance(self):
+        return _simplewallet.rpc.getWalletBalance(self.wallet)
