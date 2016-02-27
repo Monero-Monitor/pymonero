@@ -70,3 +70,15 @@ class SimpleWallet:
     
     def get_balance(self):
         return _simplewallet.rpc.getWalletBalance(self.wallet)
+    
+    def get_address(self):
+        return _simplewallet.rpc.getWalletAddress(self.wallet)
+    
+    def get_height(self):
+        return _simplewallet.rpc.getWalletHeight(self.wallet)
+        
+    def get_payments(self, wallet, payment_id):
+        return _simplewallet.rpc.getPayments(self.wallet, payment_id)
+    
+    def make_transfer(self, receive_address, amount_atomic, payment_id, mixin=3):
+        return _simplewallet.rpc.makeTransfer(self.wallet, receive_address, amount_atomic, payment_id, mixin)
