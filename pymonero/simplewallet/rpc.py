@@ -137,13 +137,19 @@ def getBulkPayments(wallet,pay_ids):
     else:
         return result, err
 
-def makeTransfer(wallet, receive_address, amount_atomic, payment_id, mixin):
-    ''' makeTransfer() :: Make transaction (Note: 1 Coin = 1e12 atomic units). '''
+def makeTransfer(wallet, receive_addresses, amounts_atomic, payment_id, mixin):
+    ''' makeTransfer() :: Make transaction(s) (Note: 1 Coin = 1e12 atomic units). '''
+    
+    # Prep destinations rpc array
+    destinations, err = _setupDestinations(receive_addresses, amounts_atomic)
+    if err != 0:
+        return destinations, err
     
     # Create rpc data input
-    recipents = [{"address": receive_address, "amount": amount_atomic}]
-    params = { "destinations": recipents, "mixin": mixin, "payment_id": payment_id}
+    params = { "destinations": destinations, "mixin": mixin, "payment_id": payment_id}
     rpc_input = { "method": "transfer", "params": params }
+    
+    print(json.dumps(rpc_input, indent=2))
     
     # Get RPC result
     result, err = walletJSONrpc(wallet, rpc_input)
@@ -159,3 +165,31 @@ def makeTransfer(wallet, receive_address, amount_atomic, payment_id, mixin):
     else:
         return result, err
 
+def _setupDestinations(receive_addresses, amounts_atomic):
+    ''' _setupDestination :: Put receive_addresses and amounts_atomic into destinations array '''
+
+    # Make sure receive_addresses is an array
+    if isinstance(receive_addresses, str):
+        recipients = [ receive_addresses ]
+    else:
+        recipients = receive_addresses
+    
+    # Make sure amounts_atomic is an array
+    if isinstance(amounts_atomic, int):
+        amounts = [ amounts_atomic ]
+    else:
+        amounts = amounts_atomic
+    
+    # Make sure number of recipients matches number of amounts
+    N_recipients = len(recipients)
+    if N_recipients != len(amounts):
+        error = utils.ErrorMessage("Error: Number of recipients does not match number of amounts.")
+        return error, 1
+    
+    # Fill out destinations for rpc data input
+    destinations = []
+    for i in range(0, N_recipients):
+        destinations.append({"address": recipients[i], "amount": amounts[i]})
+    
+    return destinations, 0
+    

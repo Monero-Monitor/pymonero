@@ -43,8 +43,9 @@ for i in range(0, len(user_port)):
     # Make Simple Wallet Transfer:
     print('\n\nSimple Wallet Transfer:\n----------------------')
     print('Simple wallet at port ' + user_port[i])
-    receive_address = '49VtwYXDbbh7hq57wwkLH36x4D6XV6Tr2P93ANnBi9qFGyYZbx8SXWPUHC9V1o7N41b4c3WJ1kubkffRfPTPfMuB8QUqFD5'
-    amount_atomic = 1000000000000
+    receive_address = ['49VtwYXDbbh7hq57wwkLH36x4D6XV6Tr2P93ANnBi9qFGyYZbx8SXWPUHC9V1o7N41b4c3WJ1kubkffRfPTPfMuB8QUqFD5',
+                       '48daf1rG3hE1Txapcsxh6WXNe9MLNKtu7W7tKTivtSoVLHErYzvdcpea2nSTgGkz66RFP4GKVAsTV14v6G3oddBTHfxP6tU']
+    amount_atomic = [1500000000000, 1000000000000]
     mixin = 3
     payment_id = pymonero.utils.gen_payment_id()
     transfer_result, err = simplewallet[i].make_transfer(receive_address, amount_atomic, payment_id, mixin)
