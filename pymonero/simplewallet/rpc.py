@@ -165,6 +165,34 @@ def makeTransfer(wallet, receive_addresses, amounts_atomic, payment_id, mixin):
     else:
         return result, err
 
+def makeTransferSplit(wallet, receive_addresses, amounts_atomic, payment_id, mixin):
+    ''' makeTransferSplit() :: Make transaction(s), split up (Note: 1 Coin = 1e12 atomic units). '''
+    
+    # Prep destinations rpc array
+    dests, err = _setupDestinations(receive_addresses, amounts_atomic)
+    if err != 0:
+        return dests, err
+    
+    # Create rpc data input
+    params = { "destinations": dests, "mixin": mixin, "payment_id": payment_id, "new_algorithm": False }
+    rpc_input = { "method": "transfer_split", "params": params }
+    
+    print(json.dumps(rpc_input, indent=2))
+    
+    # Get RPC result
+    result, err = walletJSONrpc(wallet, rpc_input)
+    
+    # Return formatted result
+    if err == 0:
+        try:
+            transfer_result = classes.TransferResult(result)
+            return transfer_result, 0
+        except:
+            error = utils.ErrorMessage("Error returning result fom 'makeTransfer'.")
+            return error, 1
+    else:
+        return result, err
+
 def _setupDestinations(receive_addresses, amounts_atomic):
     ''' _setupDestination :: Put receive_addresses and amounts_atomic into destinations array '''
 
