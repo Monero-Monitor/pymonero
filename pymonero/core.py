@@ -80,5 +80,10 @@ class SimpleWallet:
     def get_payments(self, wallet, payment_id):
         return _simplewallet.rpc.getPayments(self.wallet, payment_id)
     
+    def get_bulk_payments(self, wallet, payment_ids):
+        return _simplewallet.rpc.getBulkPayments(self.wallet, payment_ids)
+    
     def make_transfer(self, receive_address, amount_atomic, payment_id, mixin=3):
         return _simplewallet.rpc.makeTransfer(self.wallet, receive_address, amount_atomic, payment_id, mixin)
+    
+    

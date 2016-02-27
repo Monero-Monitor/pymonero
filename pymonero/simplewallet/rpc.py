@@ -107,6 +107,36 @@ def getPayments(wallet,payment_id):
     else:
         return result, err
 
+def getBulkPayments(wallet,pay_ids):
+    ''' getPayments() :: Returns payments to wallet matching payment_id using "get_payments" rpc call. 
+          "pay_ids" can either be a single payment ID string, or an array of payment ID strings.
+          This method is preferred over the getPayments() option. '''
+    
+    # Make sure payment_ids is an array
+    if isinstance(pay_ids, str):
+        payment_ids = [ pay_ids ]
+    else:
+        payment_ids = hashes
+    
+    # Create rpc data input
+    rpc_input = { "method": "get_bulk_payments", "params": {"payment_ids": payment_ids} }
+    
+    # Get RPC result
+    result, err = walletJSONrpc(wallet, rpc_input)
+    
+    # Return formatted result
+    if err == 0:
+        try:
+            payments = []
+            for i in range(0, len(result["payments"])):
+                payments.append(classes.Payment(result["payments"][i]))
+            return payments, 0
+        except:
+            error = utils.ErrorMessage("Error returning result fom 'getWalletHeight'.")
+            return error, 1
+    else:
+        return result, err
+
 def makeTransfer(wallet, receive_address, amount_atomic, payment_id, mixin):
     ''' makeTransfer() :: Make transaction (Note: 1 Coin = 1e12 atomic units). '''
     
