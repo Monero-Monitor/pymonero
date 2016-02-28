@@ -7,6 +7,9 @@ import time
 
 def startWallet(wallet, wallet_file, wallet_pass, wallet_name=None):
     
+    # Setup timer for launching wallet
+    start = time.time()
+    
     # Trim "http(s)://" from wallet.HOST for simplewallet ip
     wallet_ip = wallet.HOST
     wallet_ip = wallet_ip.replace("http://","")
@@ -33,20 +36,17 @@ def startWallet(wallet, wallet_file, wallet_pass, wallet_name=None):
     k = 0
     while err != 0:
         wallet_balance, err = getWalletHeight(wallet)
+        
         k += 1
-        if k > 500: # Takes longer than 5 seconds to start simplewallet
+        if k > 25: # Takes longer than 5 seconds to start simplewallet
             error = utils.ErrorMessage("Error connecting simplewallet.")
             return error, 1
-        time.sleep(0.01)
+        
+        time.sleep(0.2)
     
-    message = 'Wallet started successfully in ' + str(k * 10) + ' miliseconds'
+    dt = time.time() - start
+    message = 'Wallet started successfully in ' + str(dt) + ' seconds'
     return message, 0
-
-	# system_call = " simplewallet " + "--wallet-file " + wallet_file + " --password " + wallet_pass + \
-	# 				  " --rpc-bind-ip " + wallet_ip + " --rpc-bind-port " + wallet.PORT
-	# os.system(system_call)
-
-
 
 def walletJSONrpc(wallet, rpc_input):
     ''' walletJSONrpc() :: Send wallet JSON_RPC method and process initial result. '''
