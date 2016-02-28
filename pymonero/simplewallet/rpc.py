@@ -2,6 +2,51 @@ import requests as req
 import json
 from . import classes
 from .. import utils
+import subprocess
+import time
+
+def startWallet(wallet, wallet_file, wallet_pass, wallet_name=None):
+    
+    # Trim "http(s)://" from wallet.HOST for simplewallet ip
+    wallet_ip = wallet.HOST
+    wallet_ip = wallet_ip.replace("http://","")
+    wallet_ip = wallet_ip.replace("https://","")
+    
+    # Create subprocess call for simplewallet in screen
+    subprocess_call = ["screen"]
+    if wallet_name is not None:
+        subprocess_call.extend(["-S", wallet_name])
+    subprocess_call.extend(["-dm", "simplewallet",
+        "--wallet-file", wallet_file,
+        "--password", wallet_pass,
+        "--rpc-bind-ip", wallet_ip,
+        "--rpc-bind-port", wallet.PORT])
+    
+    # Call subprocess
+    try:
+        subprocess.call(subprocess_call)
+    except:
+        error = utils.ErrorMessage("Error starting simplewallet.")
+        return error, 1
+    
+    err = 1
+    k = 0
+    while err != 0:
+        wallet_balance, err = getWalletHeight(wallet)
+        k += 1
+        if k > 500: # Takes longer than 5 seconds to start simplewallet
+            error = utils.ErrorMessage("Error connecting simplewallet.")
+            return error, 1
+        time.sleep(0.01)
+    
+    message = 'Wallet started successfully in ' + str(k * 10) + ' miliseconds'
+    return message, 0
+
+	# system_call = " simplewallet " + "--wallet-file " + wallet_file + " --password " + wallet_pass + \
+	# 				  " --rpc-bind-ip " + wallet_ip + " --rpc-bind-port " + wallet.PORT
+	# os.system(system_call)
+
+
 
 def walletJSONrpc(wallet, rpc_input):
     ''' walletJSONrpc() :: Send wallet JSON_RPC method and process initial result. '''
@@ -14,6 +59,8 @@ def walletJSONrpc(wallet, rpc_input):
         resp = req.post(wallet.RPC_URL,data=json.dumps(rpc_input),headers=wallet.RPC_STANDARD_HEADER)
         output = resp.json()
         
+        # print(json.dumps(output, indent=2))
+        
         # Return result or error message from rpc call
         if "result" in output:
             result = output["result"]
@@ -21,6 +68,8 @@ def walletJSONrpc(wallet, rpc_input):
         else:
             error = utils.ErrorMessage(output["error"]["message"])
             code = output["error"]["code"]
+            if code == 0:
+                code = -1
             return error, code
     except:
         result = utils.ErrorMessage("Error returning result fom 'walletJSONrpc'.")
@@ -220,4 +269,60 @@ def _setupDestinations(receive_addresses, amounts_atomic):
         destinations.append({"address": recipients[i], "amount": amounts[i]})
     
     return destinations, 0
+
+def queryKey(wallet, key_type):
+    ''' queryKey() :: Returns key info of type "key_type" ("mnemonic" or "view_key"). '''
     
+    # Create rpc data input
+    rpc_input = { "method": "query_key", "params": {"key_type": key_type} }
+    
+    # Get RPC result
+    result, err = walletJSONrpc(wallet, rpc_input)
+    
+    # Return formatted result
+    if err == 0:
+        try:
+            return result["key"], 0
+        except:
+            error = utils.ErrorMessage("Error returning result fom 'queryKey'.")
+            return error, 1
+    else:
+        return result, err
+
+def sweepDust(wallet):
+    ''' sweepDust() ::  '''
+    
+    # Create rpc data input
+    rpc_input = { "method": "sweep_dust" }
+    
+    # Get RPC result
+    result, err = walletJSONrpc(wallet, rpc_input)
+        
+    # Return formatted result
+    if err == 0:
+        try:
+            return result["tx_hash_list"], 0
+        except:
+            error = utils.ErrorMessage("Error returning result fom 'sweepDust'.")
+            return error, 1
+    else:
+        return result, err
+
+def stopWallet(wallet):
+    ''' stopWallet() :: Cleanly disconnect simplewallet from daemon and exit. '''
+    
+    # Create rpc data input
+    rpc_input = { "method": "stop_wallet" }
+    
+    # Get RPC result
+    result, err = walletJSONrpc(wallet, rpc_input)
+    
+    # Return formatted result
+    if err == 0:
+        try:
+            return result, 0
+        except:
+            error = utils.ErrorMessage("Error returning result fom 'stopWallet'.")
+            return error, 1
+    else:
+        return result, err

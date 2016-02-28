@@ -68,6 +68,9 @@ class SimpleWallet:
             # if no valid connections.Wallet object is provided, use default
             self.wallet = _conns.Wallet()
     
+    def start_wallet(self, wallet_file, wallet_pass):
+        return _simplewallet.rpc.startWallet(self.wallet, wallet_file, wallet_pass)
+        
     def get_balance(self):
         return _simplewallet.rpc.getWalletBalance(self.wallet)
     
@@ -86,4 +89,11 @@ class SimpleWallet:
     def make_transfer(self, receive_address, amount_atomic, payment_id, mixin=3):
         return _simplewallet.rpc.makeTransfer(self.wallet, receive_address, amount_atomic, payment_id, mixin)
     
+    def query_key(self, key_type):
+        return _simplewallet.rpc.queryKey(self.wallet, key_type)
     
+    def sweep_dust(self):
+        return _simplewallet.rpc.sweepDust(self.wallet)
+    
+    def stop_wallet(self):
+        return _simplewallet.rpc.stopWallet(self.wallet)
