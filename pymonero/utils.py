@@ -1,7 +1,16 @@
 import os
 import binascii
+    
+class ErrorMessage:
+    def __init__(self, error):
+        self.error = error
+        
+    def to_JSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=2)
 
 def gen_payment_id():
+    ''' gen_payment_id() :: Generate a 32-byte random string for the payment ID. '''
+    
     # Generate 32 random bytes
     random_32_bytes = os.urandom(32)
     
@@ -11,14 +20,9 @@ def gen_payment_id():
     return payment_id
 
 def atomic_to_coins(units):
+    ''' atomic_to_coins() :: Switch from atomic integer units to Coin units. '''
     return units / 1000000000000.0
     
 def coins_to_atomic(coins):
+    ''' coins_to_atomic() :: Switch from Coin units to atomic integer units. '''
     return int(coins * 1000000000000)
-    
-class ErrorMessage:
-    def __init__(self, error):
-        self.error = error
-        
-    def to_JSON(self):
-        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=2)
