@@ -2,6 +2,7 @@ import os
 import binascii
     
 class ErrorMessage:
+    ''' ErrorMessage :: Format to return error message as structured error. '''
     def __init__(self, error):
         self.error = error
         

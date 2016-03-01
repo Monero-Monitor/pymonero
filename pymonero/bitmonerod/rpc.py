@@ -2,9 +2,9 @@ import requests as req
 import json
 from . import classes
 
-# getDaemonInfo() :: Function that returns "get_info" rpc call info
 def getDaemonInfo(daemon):
-
+    ''' getDaemonInfo() :: Function that returns "get_info" rpc call info. '''
+    
     # Create rpc data input
     rpc_input = { "method": "get_info" }         # bitmonerod rpc method
     rpc_input.update(daemon.RPC_STANDARD_VALUES) # add standard rpc values
@@ -23,9 +23,9 @@ def getDaemonInfo(daemon):
     info = classes.DaemonInfo(output["result"])
     return info
 
-# getConnections() :: Function that returns "get_connections" rpc call info
 def getConnections(daemon):
-
+    ''' getConnections() :: Function that returns "get_connections" rpc call info. '''
+    
     # Create rpc data input
     rpc_input = { "method": "get_connections" }  # bitmonerod rpc method
     rpc_input.update(daemon.RPC_STANDARD_VALUES) # add standard rpc values
@@ -44,9 +44,9 @@ def getConnections(daemon):
     connections = classes.Connections(output["result"])
     return connections
 
-# hardForkInfo() :: Function that returns "hard_fork_info" rpc call info
 def hardForkInfo(daemon):
-
+    ''' hardForkInfo() :: Function that returns "hard_fork_info" rpc call info. '''
+    
     # Create rpc data input
     rpc_input = { "method": "hard_fork_info" }  # bitmonerod rpc method
     rpc_input.update(daemon.RPC_STANDARD_VALUES) # add standard rpc values
@@ -64,9 +64,9 @@ def hardForkInfo(daemon):
     hard_fork_info = classes.HardForkInfo(output["result"])
     return hard_fork_info
 
-# getBlockCount() :: Function that returns "getblockcount" rpc call info
 def getBlockCount(daemon):
-
+    ''' getBlockCount() :: Function that returns "getblockcount" rpc call info. '''
+    
     # Create rpc data input
     rpc_input = { "method": "getblockcount" }  # bitmonerod rpc method
     rpc_input.update(daemon.RPC_STANDARD_VALUES) # add standard rpc values
@@ -88,9 +88,9 @@ def getBlockCount(daemon):
     else:
         count = output["result"]["count"]
         return count
-        
-# getDaemonInfo() :: Function that returns "get_info" rpc call info
+
 def getTransactions(daemon,hashes,block=None):
+    ''' getDaemonInfo(hashes,[block]) :: Function that returns "get_info" rpc call info. '''
     
     # bitmonerod url
     url = daemon.URL + "/gettransactions"
@@ -123,8 +123,9 @@ def getTransactions(daemon,hashes,block=None):
         transactions.append(classes.Transaction(hashes[i], output_json, block))
     return transactions
 
-# _getBlockAndParse(rpc_input) :: Function called by getBlockByHash & getBlockByHeight to return block info
 def _getBlockAndParse(daemon,rpc_input):
+    ''' _getBlockAndParse(rpc_input) :: Function called by getBlockByHash &
+        getBlockByHeight to return block info. '''
     
     # Add standard rpc values to input
     rpc_input.update(daemon.RPC_STANDARD_VALUES)
@@ -152,8 +153,9 @@ def _getBlockAndParse(daemon,rpc_input):
     # Return daemon info
     return blockInfo
 
-# getBlockByHeight(block_height) :: Function that returns "getblock" rpc call info with "height" param
 def getBlockByHeight(daemon,block_height):
+    ''' getBlockByHeight(block_height) :: Function that returns "getblock" rpc call info
+        with "height" param. '''
     
     # Define bitmonerod rpc method input
     rpc_input = { "method": "getblock", "params": { "height": block_height } }
@@ -169,8 +171,9 @@ def getBlockByHeight(daemon,block_height):
     # Return daemon info
     return blockInfo
 
-# getBlockByHash() :: Function that returns "getblock" rpc call info with "hash" param
 def getBlockByHash(daemon,block_hash):
+    ''' getBlockByHash(block_hash) :: Function that returns "getblock" rpc call info with
+        "hash" param. '''
     
     # Define bitmonerod rpc method input
     rpc_input = { "method": "getblock", "params": { "hash": block_hash } }
@@ -186,8 +189,9 @@ def getBlockByHash(daemon,block_hash):
     # Return daemon info
     return blockInfo
 
-# _getBlockAndParse(rpc_input) :: Function called by getBlockByHash & getBlockByHeight to return block info
 def _getBlockHeaderAndParse(daemon,rpc_input):
+    ''' _getBlockAndParse(rpc_input) :: Function called by getBlockByHash &
+        getBlockByHeight to return block info. '''
     
     # Add standard rpc values to input
     rpc_input.update(daemon.RPC_STANDARD_VALUES)
@@ -207,8 +211,10 @@ def _getBlockHeaderAndParse(daemon,rpc_input):
     # Return daemon info
     return blockHeader
 
-# getBlockHeaderByHeight(block_height) :: Function that returns "getblock" rpc call info with "height" param
 def getBlockHeaderByHeight(daemon,block_height):
+    ''' getBlockHeaderByHeight(block_height) :: Function that returns
+        "getblockheaderbyheight" rpc call info with "height" param. '''
+    
     if isinstance(block_height, int):
         # Define bitmonerod rpc method input
         rpc_input = { "method": "getblockheaderbyheight", "params": { "height": block_height } }
@@ -221,8 +227,9 @@ def getBlockHeaderByHeight(daemon,block_height):
     else:
         print('Block height' + str(block_height) + 'is invalid: not an integer.')
 
-# getBlockHeaderByHash() :: Function that returns "getblock" rpc call info with "hash" param
 def getBlockHeaderByHash(daemon,block_hash):
+    ''' getBlockHeaderByHash(block_hash) :: Function that returns "getblockheaderbyheight"
+        rpc call info with "hash" param. '''
     
     # Define bitmonerod rpc method input
     rpc_input = { "method": "getblockheaderbyhash", "params": { "hash": block_hash } }
@@ -232,9 +239,9 @@ def getBlockHeaderByHash(daemon,block_hash):
     
     # Return daemon info
     return blockHeader
-    
-# getBlockHeaderByHash() :: Function that returns "getblock" rpc call info with "hash" param
+
 def getLastBlockHeader(daemon):
+    ''' getLastBlockHeader() :: Function that returns "getlastblockheader" rpc call info. '''
     
     # Define bitmonerod rpc method input
     rpc_input = { "method": "getlastblockheader" }
@@ -245,8 +252,8 @@ def getLastBlockHeader(daemon):
     # Return daemon info
     return blockHeader
 
-# getBlockHash() :: Function that returns "on_getblockhash" rpc call info
 def getBlockHash(daemon, block_height):
+    ''' getBlockHash(block_height) :: Function that returns "on_getblockhash" rpc call info. '''
     
     # Define bitmonerod rpc method input
     rpc_input = { "method": "on_getblockhash", "params": [ block_height ] }
@@ -260,9 +267,10 @@ def getBlockHash(daemon, block_height):
     hash = output["result"]
     return hash
 
-# getDaemonInfo() :: Function that returns "getblocktemplate" rpc call info
 def getBlockTemplate(daemon, wallet_address, reserve_size):
-
+    ''' getDaemonInfo(wallet_address, reserve_size) :: Function that returns
+        "getblocktemplate" rpc call info. '''
+    
     # Create rpc data input
     rpc_input = { "method": "getblocktemplate", 
                     "params": { "wallet_address": wallet_address, "reserve_size": reserve_size }
