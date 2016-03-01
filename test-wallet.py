@@ -25,6 +25,13 @@ for i in range(0, len(user_port)):
     else:
         print(message.error)
     
+    # Rescan Blockchain:
+    print('\n\nSimple Wallet Rescan:\n---------------------')
+    print('Simple wallet at port ' + user_port[i])
+    rescan_blockchain, err = simplewallet[i].rescan_blockchain()
+    if err != 0:
+        print(rescan_blockchain.error)
+    
     # Print Wallet Balance:
     print('\n\nSimple Wallet Balance:\n----------------------')
     print('Simple wallet at port ' + user_port[i])
@@ -96,8 +103,8 @@ for i in range(0, len(user_port)):
     # Stop Simple Wallet:
     print('\n\nStop Simple Wallet:\n-------------------')
     print('Simple wallet at port ' + user_port[i])
-    sweep_dust, err = simplewallet[i].stop_wallet()
+    stop_wallet, err = simplewallet[i].stop_wallet()
     if err != 0:
-        print(sweep_dust.error)
+        print(stop_wallet.error)
     
     

@@ -97,3 +97,6 @@ class SimpleWallet:
     
     def stop_wallet(self):
         return _simplewallet.rpc.stopWallet(self.wallet)
+    
+    def rescan_blockchain(self):
+        return _simplewallet.rpc.rescanBlockchain(self.wallet)

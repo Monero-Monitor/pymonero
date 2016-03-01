@@ -6,6 +6,7 @@ import subprocess
 import time
 
 def startWallet(wallet, wallet_file, wallet_pass, wallet_name=None):
+    ''' startWallet() :: initialize simplewallet for a wallet that already exists. '''
     
     # Setup timer for launching wallet
     start = time.time()
@@ -290,7 +291,7 @@ def queryKey(wallet, key_type):
         return result, err
 
 def sweepDust(wallet):
-    ''' sweepDust() ::  '''
+    ''' sweepDust() :: Get all wallet inputs that are too small and sweep. '''
     
     # Create rpc data input
     rpc_input = { "method": "sweep_dust" }
@@ -323,6 +324,25 @@ def stopWallet(wallet):
             return result, 0
         except:
             error = utils.ErrorMessage("Error returning result fom 'stopWallet'.")
+            return error, 1
+    else:
+        return result, err
+
+def rescanBlockchain(wallet):
+    ''' rescanBlockchain() :: Re-scan blockchain for wallet transactions from genesis. '''
+    
+    # Create rpc data input
+    rpc_input = { "method": "rescan_blockchain" }
+    
+    # Get RPC result
+    result, err = walletJSONrpc(wallet, rpc_input)
+    
+    # Return formatted result
+    if err == 0:
+        try:
+            return result, 0
+        except:
+            error = utils.ErrorMessage("Error returning result fom 'rescanBlockchain'.")
             return error, 1
     else:
         return result, err
