@@ -4,7 +4,28 @@ from . import classes
 from .. import utils
 import subprocess
 import time
+import os
 
+def newWalletFromViewKey(address, view_key, wallet_dir, wallet_file, wallet_pass):
+    ''' newWalletFromViewKey(address, view_key, wallet_file, wallet_pass) :: initialize a 
+        new wallet using simplewallet from a view key and address, then exit. '''
+    
+    # Create subprocess call for simplewallet in screen
+    # simplewallet --generate-from-view-key 46BeWrHpwXmHDpDEUmZBWZfoQpdc6HaERCNmx1pEYL2rAcuwufPN9rXHHtyUA4QVy66qeFQkn6sfK8aHYjA3jk3o1Bv16em:e422831985c9205238ef84daf6805526c14d96fd7b059fe68c7ab98e495e5703:wallet000001.bin --password 12345678 exit
+    #subprocess_call = ['screen','simplewallet', '--generate-from-view-key',
+    #    address+':'+view_key+':'+wallet_file, '--password', wallet_pass, 'exit']
+    
+    # Call subprocess
+    #try:
+    #subprocess.call(subprocess_call, cwd=wallet_dir)
+    os.chdir(wallet_dir)
+    os.system('simplewallet --generate-from-view-key ' + address+':'+view_key+':'+wallet_file + ' --password ' + wallet_pass)
+    #    message = "New view-only wallet '" + wallet_file + "' successfully created."
+    #    return message, 0
+    #except:
+    #    error = utils.ErrorMessage("Error starting simplewallet.")
+    #    return error, 1
+    
 def startWallet(wallet, wallet_file, wallet_pass, wallet_name=None):
     ''' startWallet() :: initialize simplewallet for a wallet that already exists. '''
     
@@ -39,7 +60,7 @@ def startWallet(wallet, wallet_file, wallet_pass, wallet_name=None):
         wallet_balance, err = getWalletHeight(wallet)
         
         k += 1
-        if k > 25: # Takes longer than 5 seconds to start simplewallet
+        if k > 150: # Takes longer than 5 seconds to start simplewallet
             error = utils.ErrorMessage("Error connecting simplewallet.")
             return error, 1
         
@@ -135,7 +156,7 @@ def getWalletHeight(wallet):
     else:
         return result, err
 
-def getPayments(wallet,payment_id):
+def getPayments(wallet, payment_id):
     ''' getPayments() :: Returns payments to wallet matching payment_id using "get_payments" rpc call. '''
     
     # Create rpc data input
@@ -157,8 +178,8 @@ def getPayments(wallet,payment_id):
     else:
         return result, err
 
-def getBulkPayments(wallet,pay_ids):
-    ''' getPayments() :: Returns payments to wallet matching payment_id using "get_payments" rpc call. 
+def getBulkPayments(wallet, pay_ids):
+    ''' getBulkPayments() :: Returns payments to wallet matching payment_id using "get_bulk_payments" rpc call. 
           "pay_ids" can either be a single payment ID string, or an array of payment ID strings.
           This method is preferred over the getPayments() option. '''
     
@@ -187,6 +208,35 @@ def getBulkPayments(wallet,pay_ids):
     else:
         return result, err
 
+def incomingTransfers(wallet, type):
+    ''' incomingTransfers(): Get received transactions (type = "all", "available", or "unavailable"). '''
+    
+    # Create rpc data input
+    rpc_input = { "method": "incoming_transfers", "params": {"transfer_type": type} }
+    
+    # Get RPC result
+    result, err = walletJSONrpc(wallet, rpc_input)
+    
+    print(err)
+    print(json.dumps(result,indent=2))
+    
+    # Return formatted result
+    if err == 0:
+        try:
+            print(len(result["transfers"]))
+            #print(json.dumps(result))
+            #payments = []
+            #for i in range(0, len(result["payments"])):
+            #    payments.append(classes.Payment(result["payments"][i]))
+            #return payments, 0
+        except:
+            error = utils.ErrorMessage("Error returning result fom 'incomingTransfers'.")
+            return error, 1
+    else:
+        print(result.error)
+        #return result, err
+    
+    
 def makeTransfer(wallet, receive_addresses, amounts_atomic, payment_id, mixin):
     ''' makeTransfer() :: Make transaction(s) (Note: 1 Coin = 1e12 atomic units). '''
     

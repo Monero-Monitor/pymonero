@@ -68,9 +68,12 @@ class SimpleWallet:
             # if no valid connections.Wallet object is provided, use default
             self.wallet = _conns.Wallet()
     
+    def new_wallet_from_view_key(self, address, view_key, wallet_dir, wallet_file, password):
+        return _simplewallet.rpc.newWalletFromViewKey(address, view_key, wallet_dir, wallet_file, password)
+    
     def start_wallet(self, wallet_file, wallet_pass):
         return _simplewallet.rpc.startWallet(self.wallet, wallet_file, wallet_pass)
-        
+    
     def get_balance(self):
         return _simplewallet.rpc.getWalletBalance(self.wallet)
     
@@ -79,12 +82,15 @@ class SimpleWallet:
     
     def get_height(self):
         return _simplewallet.rpc.getWalletHeight(self.wallet)
-        
-    def get_payments(self, wallet, payment_id):
+    
+    def get_payments(self, payment_id):
         return _simplewallet.rpc.getPayments(self.wallet, payment_id)
     
-    def get_bulk_payments(self, wallet, payment_ids):
+    def get_bulk_payments(self, payment_ids):
         return _simplewallet.rpc.getBulkPayments(self.wallet, payment_ids)
+    
+    def incoming_transfers(self, type):
+        return _simplewallet.rpc.incomingTransfers(self.wallet, type)
     
     def make_transfer(self, receive_address, amount_atomic, payment_id, mixin=3):
         return _simplewallet.rpc.makeTransfer(self.wallet, receive_address, amount_atomic, payment_id, mixin)
