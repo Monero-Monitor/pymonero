@@ -6,7 +6,7 @@ A Monero daemon RPC connection tool in python. See `LICENSE` for use.
 
 See `example-bitmonero.py` for example script showcasing daemon methods.
 
-Documentation is available in this repository's wiki page.
+Documentation is available in this repository's [wiki](https://github.com/Monero-Monitor/pymonero/wiki) page.
 
 # Acknowledgements
 
