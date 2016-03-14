@@ -5,3 +5,4 @@ __pycache__/*
 *.log
 log
 log/*
+wallets
