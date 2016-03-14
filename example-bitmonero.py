@@ -63,7 +63,6 @@ if err == 0:
 else:
     print(block_header.error)
 
-'''
 # Get all block information for most recent block from hash
 print('\n\nBlock Information:\n------------------')
 block_hash, err = bitmonero.get_block_hash(912345)
@@ -123,5 +122,3 @@ if err == 0:
     print(block_template.to_JSON())
 else:
     print(block_template.error)
-
-'''
