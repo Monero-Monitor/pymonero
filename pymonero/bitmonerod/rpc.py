@@ -17,16 +17,13 @@ def daemonJSONrpc(daemon, rpc_input):
         # Return result or error message from rpc call
         if "result" in output:
             result = output["result"]
-            return result, 0
+            return result
         else:
             error = utils.ErrorMessage(output["error"]["message"])
-            code = output["error"]["code"]
-            if code == 0:
-                code = -1
-            return error, code
+            return error
     except:
-        result = utils.ErrorMessage("Error returning result from 'daemonJSONrpc'.")
-        return result, 1
+        error = utils.ErrorMessage("Error returning result from 'daemonJSONrpc'.")
+        return error
 
 def daemonRPC(daemon, interface, rpc_input):
     '''daemonRPC() :: Send daemon RPC method and process initial result.'''
@@ -38,82 +35,86 @@ def daemonRPC(daemon, interface, rpc_input):
         resp = req.post(method_url,data=json.dumps(rpc_input),headers=daemon.RPC_STANDARD_HEADER)
         output = resp.json()
         
-        return output, 0
+        return output
     except:
         error = utils.ErrorMessage("Error returning result from 'daemonRPC'.")
-        return error, 1
+        return error
 
 def getDaemonInfo(daemon):
     ''' getDaemonInfo() :: Function that returns "get_info" rpc call info. '''
     
     # Create rpc data input
-    rpc_input = { "method": "get_info" } # Get RPC result
-    result, err = daemonJSONrpc(daemon, rpc_input)
+    rpc_input = {"method": "get_info"}
+    result = daemonJSONrpc(daemon, rpc_input)
+    
+    # Check if bitmonerod gave a specific error message
+    if hasattr(result, 'error'):
+        return result
     
     # Return formatted result
-    if err == 0:
-        try:
-            info = classes.DaemonInfo(result)
-            return info, 0
-        except:
-            error = utils.ErrorMessage("Error returning result from 'getDaemonInfo'.")
-            return error, 1
-    else:
-        return result, err
+    try:
+        info = classes.DaemonInfo(result)
+        return info
+    except:
+        error = utils.ErrorMessage("Error parsing result as class DaemonInfo.")
+        return error
 
 def getConnections(daemon):
     '''getConnections() :: Function that returns "get_connections" rpc call info.'''
     
     # Create rpc data input
-    rpc_input = { "method": "get_connections" } # Get RPC result
-    result, err = daemonJSONrpc(daemon, rpc_input)
+    rpc_input = {"method": "get_connections"}
+    result = daemonJSONrpc(daemon, rpc_input)
+    
+    # Check if bitmonerod gave a specific error message
+    if hasattr(result, 'error'):
+        return result
     
     # Return formatted result
-    if err == 0:
-        try:
-            connections = classes.Connections(result)
-            return connections, 0
-        except:
-            error = utils.ErrorMessage("Error returning result from 'getConnections'.")
-            return error, 1
-    else:
-        return result, err
+    try:
+        connections = classes.Connections(result)
+        return connections
+    except:
+        error = utils.ErrorMessage("Error parsing result as class Connections.")
+        return error
 
 def hardForkInfo(daemon):
     ''' hardForkInfo() :: Function that returns "hard_fork_info" rpc call info. '''
     
     # Create rpc data input
-    rpc_input = { "method": "hard_fork_info" } # Get RPC result
-    result, err = daemonJSONrpc(daemon, rpc_input)
+    rpc_input = {"method": "hard_fork_info"}
+    result = daemonJSONrpc(daemon, rpc_input)
+    
+    # Check if bitmonerod gave a specific error message
+    if hasattr(result, 'error'):
+        return result
     
     # Return formatted result
-    if err == 0:
-        try:
-            hard_fork_info = classes.HardForkInfo(result)
-            return hard_fork_info, 0
-        except:
-            error = utils.ErrorMessage("Error returning result from 'hardForkInfo'.")
-            return error, 1
-    else:
-        return result, err
+    try:
+        hard_fork_info = classes.HardForkInfo(result)
+        return hard_fork_info
+    except:
+        error = utils.ErrorMessage("Error parsing result as 'HardForkInfo'.")
+        return error
 
 def getBlockCount(daemon):
     ''' getBlockCount() :: Function that returns "getblockcount" rpc call info. '''
     
     # Create rpc data input
-    rpc_input = { "method": "getblockcount" } # Get RPC result
-    result, err = daemonJSONrpc(daemon, rpc_input)
+    rpc_input = {"method": "getblockcount"}
+    result = daemonJSONrpc(daemon, rpc_input)
+    
+    # Check if bitmonerod gave a specific error message
+    if hasattr(result, 'error'):
+        return result
     
     # Return formatted result
-    if err == 0:
-        try:
-            count = int(result["count"])
-            return count, 0
-        except:
-            error = utils.ErrorMessage("Error returning result from 'getBlockCount'.")
-            return error, 1
-    else:
-        return result, err
+    try:
+        count = int(result["count"])
+        return count
+    except:
+        error = utils.ErrorMessage("Error parsing result as block count type int.")
+        return error
 
 def getTransactions(daemon,hashes,block=None):
     ''' getDaemonInfo(hashes,[block]) :: Function that returns "get_info" rpc call info. '''
@@ -126,32 +127,34 @@ def getTransactions(daemon,hashes,block=None):
         txs_hashes = [ hashes ]
     else:
         txs_hashes = hashes
-    rpc_input = { "txs_hashes": txs_hashes, "decode_as_json": True }
     
-    output, err = daemonRPC(daemon, method, rpc_input)
+    rpc_input = {"txs_hashes": txs_hashes, "decode_as_json": True}
+    output = daemonRPC(daemon, method, rpc_input)
     
-    if err == 0:
-        if "missed_tx" in output:
-            error = utils.ErrorMessage("Error returning result from 'getTransactions': missed_tx")
-            error.missed_tx = output["missed_tx"]
-            return error, -1
-        else:
-            try:
-                txs_as_json = output["txs_as_json"]
-                n_txs = len(txs_as_json)
-                transactions = []
-                for i in range(0,n_txs):
-                    output_json_str = str(txs_as_json[i])
-                    output_json_str.replace('\\', '')
-                    output_json = json.loads(output_json_str)
-                    transactions.append(classes.Transaction(hashes[i], output_json, block))
-                return transactions, 0
-            except:
-                print(json.dumps(output, indent=2))
-                error = utils.ErrorMessage("Error returning result from 'getTransactions'.")
-                return error, 1
+    # Check if bitmonerod gave a specific error message
+    if hasattr(output, 'error'):
+        return output
+    
+    if "txs_as_json" in output:
+        txs_as_json = output["txs_as_json"]
     else:
-        return output, err
+        txs_as_json = []
+    
+    if "missed_tx" in output:
+        missed_tx = output["missed_tx"]
+    else:
+        missed_tx = []
+    
+    if len(txs_hashes) != (len(txs_as_json) + len(missed_tx)):
+        error = utils.ErrorMessage("There was an unknown error returning txs. Number returned != number input.")
+        return error
+    
+    try:
+        transactions = classes.Transactions(hashes, txs_as_json, missed_tx, block)
+        return transactions
+    except:
+        error = utils.ErrorMessage("Error parsing result as class Transactions.")
+        return error
 
 def _getBlockAndParse(daemon,rpc_input):
     ''' _getBlockAndParse(rpc_input) :: Function called by getBlockByHash &
@@ -173,16 +176,8 @@ def _getBlockAndParse(daemon,rpc_input):
             result = output["result"]
         else:
             error = utils.ErrorMessage(output["error"]["message"])
-            code = output["error"]["code"]
-            if code == 0:
-                code = -1
-            return error, code
-        
-    except:
-        error = utils.ErrorMessage("Error returning result from '_getBlockAndParse'.")
-        return error, 1
+            return error
     
-    try:
         # Gather block header:
         block_header = result["block_header"]
         
@@ -194,11 +189,12 @@ def _getBlockAndParse(daemon,rpc_input):
         # Get block info
         blockInfo = classes.BlockInfo(block_header, output_json)
         
-        # Return daemon info
-        return blockInfo, 0
+        # Return block info
+        return blockInfo
+        
     except:
-        error = utils.ErrorMessage("Error returning block info from '_getBlockAndParse'.")
-        return error, 1
+        error = utils.ErrorMessage("Error parsing result as class BlockInfo.")
+        return error
 
 def getBlockByHeight(daemon,block_height):
     ''' getBlockByHeight(block_height) :: Function that returns "getblock" rpc call info
@@ -209,13 +205,13 @@ def getBlockByHeight(daemon,block_height):
         rpc_input = { "method": "getblock", "params": { "height": block_height } }
     
         # Get block and parse into structure
-        blockInfo, err = _getBlockAndParse(daemon,rpc_input)
+        blockInfo = _getBlockAndParse(daemon,rpc_input)
         
-        # Return daemon info
-        return blockInfo, err
+        # Return block info
+        return blockInfo
     else:
         error = utils.ErrorMessage('Block height' + str(block_height) + 'is invalid: not an integer.')
-        return error, 1
+        return error
 
 def getBlockByHash(daemon,block_hash):
     ''' getBlockByHash(block_hash) :: Function that returns "getblock" rpc call info with
@@ -225,10 +221,10 @@ def getBlockByHash(daemon,block_hash):
     rpc_input = { "method": "getblock", "params": { "hash": block_hash } }
     
     # Get block and parse into structure
-    blockInfo, err = _getBlockAndParse(daemon,rpc_input)
+    blockInfo = _getBlockAndParse(daemon,rpc_input)
     
-    # Return daemon info
-    return blockInfo, err
+    # Return block info
+    return blockInfo
 
 def _getBlockHeaderAndParse(daemon,rpc_input):
     ''' _getBlockAndParse(rpc_input) :: Function called by getBlockByHash &
@@ -248,27 +244,20 @@ def _getBlockHeaderAndParse(daemon,rpc_input):
             result = output["result"]
         else:
             error = utils.ErrorMessage(output["error"]["message"])
-            code = output["error"]["code"]
-            if code == 0:
-                code = -1
-            return error, code
+            return error
         
-    except:
-        error = utils.ErrorMessage("Error returning result from '_getBlockHeaderAndParse'.")
-        return error, 1
-    
-    try:
         # Gather block header:
         block_header = result["block_header"];
         
         # Get block info
         blockHeader = classes.BlockHeader(block_header)
         
-        # Return daemon info
-        return blockHeader, 0
+        # Return block header info
+        return blockHeader
+        
     except:
-        error = utils.ErrorMessage("Error returning header info from '_getBlockHeaderAndParse'.")
-        return error, 1
+        error = utils.ErrorMessage("Error parsing result as class BlockHeader.")
+        return error
 
 def getBlockHeaderByHeight(daemon,block_height):
     ''' getBlockHeaderByHeight(block_height) :: Function that returns
@@ -276,16 +265,16 @@ def getBlockHeaderByHeight(daemon,block_height):
     
     if isinstance(block_height, int):
         # Define bitmonerod rpc method input
-        rpc_input = { "method": "getblockheaderbyheight", "params": { "height": block_height } }
+        rpc_input = {"method": "getblockheaderbyheight", "params": {"height": block_height}}
         
         # Get block and parse into structure
-        blockHeader, err = _getBlockHeaderAndParse(daemon,rpc_input)
+        blockHeader = _getBlockHeaderAndParse(daemon,rpc_input)
     
-        # Return daemon info
-        return blockHeader, err
+        # Return block header info
+        return blockHeader
     else:
         error = utils.ErrorMessage('Block height' + str(block_height) + 'is invalid: not an integer.')
-        return error, 1
+        return error
 
 def getBlockHeaderByHash(daemon,block_hash):
     ''' getBlockHeaderByHash(block_hash) :: Function that returns "getblockheaderbyheight"
@@ -293,57 +282,61 @@ def getBlockHeaderByHash(daemon,block_hash):
     
     if isinstance(block_hash, str):
         # Define bitmonerod rpc method input
-        rpc_input = { "method": "getblockheaderbyhash", "params": { "hash": block_hash } }
+        rpc_input = {"method": "getblockheaderbyhash", "params": {"hash": block_hash}}
         
         # Get block and parse into structure
-        blockHeader, err = _getBlockHeaderAndParse(daemon,rpc_input)
+        blockHeader = _getBlockHeaderAndParse(daemon,rpc_input)
     
-        # Return daemon info
-        return blockHeader, err
+        # Return block header info
+        return blockHeader
     else:
         error = utils.ErrorMessage('Block hash' + str(block_hash) + 'is invalid: not a string.')
-        return error, 1
+        return error
 
 def getLastBlockHeader(daemon):
     ''' getLastBlockHeader() :: Function that returns "getlastblockheader" rpc call info. '''
     
     # Define bitmonerod rpc method input
-    rpc_input = { "method": "getlastblockheader" }
+    rpc_input = {"method": "getlastblockheader"}
     
     # Get block and parse into structure
-    blockHeader, err = _getBlockHeaderAndParse(daemon,rpc_input)
+    blockHeader = _getBlockHeaderAndParse(daemon,rpc_input)
     
     # Return daemon info
-    return blockHeader, err
+    return blockHeader
 
 def getBlockHash(daemon, block_height):
     ''' getBlockHash(block_height) :: Function that returns "on_getblockhash" rpc call info. '''
     
-    # Define bitmonerod rpc method input
-    rpc_input = { "method": "on_getblockhash", "params": [ block_height ] }
-    result, err = daemonJSONrpc(daemon, rpc_input)
+    if isinstance(block_height, int):
+        # Define bitmonerod rpc method input
+        rpc_input = {"method": "on_getblockhash", "params": [block_height]}
+        blockHash = daemonJSONrpc(daemon, rpc_input)
+        
+        # Return formatted result (valid result is just a string of the hash).
+        return blockHash
     
-    # Return formatted result (valid result is just a string of the hash).
-    return result, err
-    
+    else:
+        error = utils.ErrorMessage('Block height' + str(block_height) + 'is invalid: not an int.')
+        return error
 
 def getBlockTemplate(daemon, wallet_address, reserve_size):
     ''' getDaemonInfo(wallet_address, reserve_size) :: Function that returns
         "getblocktemplate" rpc call info. '''
     
     # Create rpc data input
-    rpc_input = { "method": "getblocktemplate", 
-                    "params": { "wallet_address": wallet_address, "reserve_size": reserve_size }
-                } # bitmonerod rpc method
-    result, err = daemonJSONrpc(daemon, rpc_input)
+    rpc_input = {"method": "getblocktemplate",
+                 "params": {"wallet_address": wallet_address, "reserve_size": reserve_size}}
+    result = daemonJSONrpc(daemon, rpc_input)
+    
+    # Check if bitmonerod gave a specific error message
+    if hasattr(result, 'error'):
+        return result
     
     # Return formatted result
-    if err == 0:
-        try:
-            info = classes.BlockTemplate(result)
-            return info, 0
-        except:
-            error = utils.ErrorMessage("Error returning result from 'getBlockTemplate'.")
-            return error, 1
-    else:
-        return result, err
+    try:
+        info = classes.BlockTemplate(result)
+        return info
+    except:
+        error = utils.ErrorMessage("Error parsing result as class 'BlockTemplate'.")
+        return error

@@ -160,16 +160,19 @@ class VinKey:
 
 # Transactions :: Class used to parse txs from "/gettransactions" method
 class Transactions:
-    def __init__(self, hashes, txs_as_json, block=None):
+    def __init__(self, hashes, txs_as_json, missed_tx, block=None):
+        if block is not None:
+            self.block = block
+        self.missed = missed_tx
+        for i in range(0,len(missed_tx)):
+            hashes.remove(missed_tx[i])
+        self.found = []
         n_txs = len(txs_as_json)
-        self.txs = []
         for i in range(0,n_txs):
             output_json_str = str(txs_as_json[i])
             output_json_str.replace('\\', '')
             output_json = json.loads(output_json_str)
-            self.txs.append(Transaction(hashes[i], output_json))
-        if block is not None:
-            self.block = block
+            self.found.append(Transaction(hashes[i], output_json))
             
     def to_JSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=2)
@@ -193,6 +196,8 @@ class Transaction:
         
     def to_JSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=2)
+
+
 
 # BlockTemplate :: Class used to parse result from json_rpc "getblocktemplate" method
 class BlockTemplate:
