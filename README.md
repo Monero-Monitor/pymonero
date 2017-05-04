@@ -2,6 +2,8 @@
 
 A python tool for Monero. See `LICENSE` for use.
 
+This repository has been deprecated and it is likely that it does not contain all RPC calls. Functionality in this project is being migrated to https://github.com/bigreddmachine/MoneroPy/ but some might not be ready yet.
+
 ## Features
 
 * bitmonerod daemon RPC communication
